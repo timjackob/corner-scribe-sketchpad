@@ -20,8 +20,11 @@ const ClipboardManager = () => {
   ]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [size, setSize] = useState({ width: 320, height: 400 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const addNewItem = () => {
@@ -61,13 +64,26 @@ const ClipboardManager = () => {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.drag-handle')) {
+    const target = e.target as HTMLElement;
+    
+    if (target.closest('.drag-handle')) {
       setIsDragging(true);
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
         setDragOffset({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top
+        });
+      }
+    } else if (target.closest('.resize-handle')) {
+      const resizeType = target.closest('.resize-handle')?.getAttribute('data-resize');
+      if (resizeType) {
+        setIsResizing(resizeType);
+        setResizeStart({
+          x: e.clientX,
+          y: e.clientY,
+          width: size.width,
+          height: size.height
         });
       }
     }
@@ -77,17 +93,50 @@ const ClipboardManager = () => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         setPosition({
-          x: Math.max(0, Math.min(window.innerWidth - 320, e.clientX - dragOffset.x)),
-          y: Math.max(0, Math.min(window.innerHeight - 400, e.clientY - dragOffset.y))
+          x: Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragOffset.x)),
+          y: Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragOffset.y))
         });
+      } else if (isResizing) {
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        
+        let newWidth = resizeStart.width;
+        let newHeight = resizeStart.height;
+        let newX = position.x;
+        let newY = position.y;
+
+        switch (isResizing) {
+          case 'right':
+            newWidth = Math.max(280, resizeStart.width + deltaX);
+            break;
+          case 'bottom':
+            newHeight = Math.max(300, resizeStart.height + deltaY);
+            break;
+          case 'corner':
+            newWidth = Math.max(280, resizeStart.width + deltaX);
+            newHeight = Math.max(300, resizeStart.height + deltaY);
+            break;
+          case 'left':
+            newWidth = Math.max(280, resizeStart.width - deltaX);
+            newX = Math.min(position.x, position.x + resizeStart.width - newWidth);
+            break;
+          case 'top':
+            newHeight = Math.max(300, resizeStart.height - deltaY);
+            newY = Math.min(position.y, position.y + resizeStart.height - newHeight);
+            break;
+        }
+
+        setSize({ width: newWidth, height: newHeight });
+        setPosition({ x: newX, y: newY });
       }
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      setIsResizing(null);
     };
 
-    if (isDragging) {
+    if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -96,19 +145,32 @@ const ClipboardManager = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging, isResizing, dragOffset, resizeStart, position, size]);
 
   return (
     <div
       ref={containerRef}
-      className="fixed bg-white border border-gray-200 rounded-lg shadow-lg w-80 z-50 select-none"
+      className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-50 select-none"
       style={{ 
         left: position.x, 
         top: position.y,
-        maxHeight: '400px'
+        width: size.width,
+        height: size.height,
+        minWidth: '280px',
+        minHeight: '300px'
       }}
       onMouseDown={handleMouseDown}
     >
+      {/* Resize handles */}
+      <div className="resize-handle absolute top-0 left-0 w-2 h-2 cursor-nw-resize" data-resize="top-left" />
+      <div className="resize-handle absolute top-0 right-0 w-2 h-2 cursor-ne-resize" data-resize="top-right" />
+      <div className="resize-handle absolute bottom-0 left-0 w-2 h-2 cursor-sw-resize" data-resize="bottom-left" />
+      <div className="resize-handle absolute bottom-0 right-0 w-2 h-2 cursor-se-resize" data-resize="corner" />
+      <div className="resize-handle absolute top-0 left-2 right-2 h-1 cursor-n-resize" data-resize="top" />
+      <div className="resize-handle absolute bottom-0 left-2 right-2 h-1 cursor-s-resize" data-resize="bottom" />
+      <div className="resize-handle absolute left-0 top-2 bottom-2 w-1 cursor-w-resize" data-resize="left" />
+      <div className="resize-handle absolute right-0 top-2 bottom-2 w-1 cursor-e-resize" data-resize="right" />
+
       <div className="drag-handle cursor-move bg-gray-50 px-3 py-2 border-b border-gray-200 rounded-t-lg">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700">Tim's Stupendous Copy/Paste-A-Thon</span>
@@ -120,13 +182,13 @@ const ClipboardManager = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="edit" className="w-full">
+      <Tabs defaultValue="edit" className="w-full h-full flex flex-col">
         <TabsList className="grid w-full grid-cols-2 m-2 mb-0">
           <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
           <TabsTrigger value="copy" className="text-xs">Copy</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="edit" className="p-3 space-y-3 max-h-80 overflow-y-auto">
+        <TabsContent value="edit" className="p-3 space-y-3 flex-1 overflow-y-auto">
           {textItems.map((item) => (
             <div key={item.id} className="space-y-2 p-2 border border-gray-100 rounded">
               <div className="flex items-center space-x-2">
@@ -158,7 +220,7 @@ const ClipboardManager = () => {
           </Button>
         </TabsContent>
 
-        <TabsContent value="copy" className="p-3 space-y-2 max-h-80 overflow-y-auto">
+        <TabsContent value="copy" className="p-3 space-y-2 flex-1 overflow-y-auto">
           {textItems.filter(item => item.content.trim()).map((item) => (
             <button
               key={item.id}
