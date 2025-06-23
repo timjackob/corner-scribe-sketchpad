@@ -111,7 +111,7 @@ const ClipboardManager = () => {
     >
       <div className="drag-handle cursor-move bg-gray-50 px-3 py-2 border-b border-gray-200 rounded-t-lg">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Clipboard Manager</span>
+          <span className="text-sm font-medium text-gray-700">Tim's Stupendous Copy/Paste-A-Thon</span>
           <div className="flex space-x-1">
             <div className="w-2 h-2 bg-red-400 rounded-full"></div>
             <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
