@@ -24,7 +24,7 @@ const ClipboardManager = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const addNewItem = () => {
@@ -83,7 +83,9 @@ const ClipboardManager = () => {
           x: e.clientX,
           y: e.clientY,
           width: size.width,
-          height: size.height
+          height: size.height,
+          posX: position.x,
+          posY: position.y
         });
       }
     }
@@ -102,8 +104,8 @@ const ClipboardManager = () => {
         
         let newWidth = resizeStart.width;
         let newHeight = resizeStart.height;
-        let newX = position.x;
-        let newY = position.y;
+        let newX = resizeStart.posX;
+        let newY = resizeStart.posY;
 
         switch (isResizing) {
           case 'right':
@@ -113,16 +115,33 @@ const ClipboardManager = () => {
             newHeight = Math.max(300, resizeStart.height + deltaY);
             break;
           case 'corner':
+          case 'bottom-right':
             newWidth = Math.max(280, resizeStart.width + deltaX);
             newHeight = Math.max(300, resizeStart.height + deltaY);
             break;
           case 'left':
             newWidth = Math.max(280, resizeStart.width - deltaX);
-            newX = Math.min(position.x, position.x + resizeStart.width - newWidth);
+            newX = resizeStart.posX + (resizeStart.width - newWidth);
             break;
           case 'top':
             newHeight = Math.max(300, resizeStart.height - deltaY);
-            newY = Math.min(position.y, position.y + resizeStart.height - newHeight);
+            newY = resizeStart.posY + (resizeStart.height - newHeight);
+            break;
+          case 'top-left':
+            newWidth = Math.max(280, resizeStart.width - deltaX);
+            newHeight = Math.max(300, resizeStart.height - deltaY);
+            newX = resizeStart.posX + (resizeStart.width - newWidth);
+            newY = resizeStart.posY + (resizeStart.height - newHeight);
+            break;
+          case 'top-right':
+            newWidth = Math.max(280, resizeStart.width + deltaX);
+            newHeight = Math.max(300, resizeStart.height - deltaY);
+            newY = resizeStart.posY + (resizeStart.height - newHeight);
+            break;
+          case 'bottom-left':
+            newWidth = Math.max(280, resizeStart.width - deltaX);
+            newHeight = Math.max(300, resizeStart.height + deltaY);
+            newX = resizeStart.posX + (resizeStart.width - newWidth);
             break;
         }
 
@@ -165,7 +184,7 @@ const ClipboardManager = () => {
       <div className="resize-handle absolute top-0 left-0 w-2 h-2 cursor-nw-resize" data-resize="top-left" />
       <div className="resize-handle absolute top-0 right-0 w-2 h-2 cursor-ne-resize" data-resize="top-right" />
       <div className="resize-handle absolute bottom-0 left-0 w-2 h-2 cursor-sw-resize" data-resize="bottom-left" />
-      <div className="resize-handle absolute bottom-0 right-0 w-2 h-2 cursor-se-resize" data-resize="corner" />
+      <div className="resize-handle absolute bottom-0 right-0 w-2 h-2 cursor-se-resize" data-resize="bottom-right" />
       <div className="resize-handle absolute top-0 left-2 right-2 h-1 cursor-n-resize" data-resize="top" />
       <div className="resize-handle absolute bottom-0 left-2 right-2 h-1 cursor-s-resize" data-resize="bottom" />
       <div className="resize-handle absolute left-0 top-2 bottom-2 w-1 cursor-w-resize" data-resize="left" />
@@ -197,7 +216,7 @@ const ClipboardManager = () => {
                   onCheckedChange={(checked) => updateItemFormat(item.id, checked)}
                   className="scale-75"
                 />
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-gray-600 flex-1">
                   {item.isFormatted ? 'Formatted' : 'Plain'}
                 </span>
               </div>
