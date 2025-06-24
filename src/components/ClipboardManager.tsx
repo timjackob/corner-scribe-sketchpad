@@ -195,14 +195,7 @@ const ClipboardManager = () => {
       <div className="resize-handle absolute right-0 top-2 bottom-2 w-1 cursor-e-resize" data-resize="right" />
 
       <div className="drag-handle cursor-move bg-gray-50 px-3 py-2 border-b border-gray-200 rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Tim's Stupendous Copy/Paste-A-Thon</span>
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-          </div>
-        </div>
+        <span className="text-sm font-medium text-gray-700">Tim's Stupendous Copy/Paste-A-Thon</span>
       </div>
 
       <Tabs defaultValue="edit" className="w-full h-full flex flex-col">
