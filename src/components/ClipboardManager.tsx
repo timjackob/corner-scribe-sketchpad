@@ -232,7 +232,7 @@ const ClipboardManager = () => {
   return (
     <div
       ref={containerRef}
-      className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-50 select-none"
+      className="fixed bg-gray-900 border border-gray-700 rounded-lg shadow-2xl z-50 select-none text-white"
       style={{ 
         left: position.x, 
         top: position.y,
@@ -253,14 +253,14 @@ const ClipboardManager = () => {
       <div className="resize-handle absolute left-0 top-2 bottom-2 w-1 cursor-w-resize" data-resize="left" />
       <div className="resize-handle absolute right-0 top-2 bottom-2 w-1 cursor-e-resize" data-resize="right" />
 
-      <div className="drag-handle cursor-move bg-gray-50 px-3 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">Tim's Stupendous Copy/Paste-A-Thon</span>
+      <div className="drag-handle cursor-move bg-gray-800 px-3 py-2 border-b border-gray-700 rounded-t-lg flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-100">CornerScribe</span>
         <div className="flex space-x-1">
           <Button
             onClick={saveConfiguration}
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-gray-500 hover:text-blue-600"
+            className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400 hover:bg-gray-700"
             title="Save Configuration"
           >
             <Save className="w-3 h-3" />
@@ -269,7 +269,7 @@ const ClipboardManager = () => {
             onClick={triggerFileInput}
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-gray-500 hover:text-green-600"
+            className="h-6 w-6 p-0 text-gray-400 hover:text-green-400 hover:bg-gray-700"
             title="Load Configuration"
           >
             <Upload className="w-3 h-3" />
@@ -286,28 +286,28 @@ const ClipboardManager = () => {
       />
 
       <Tabs defaultValue="edit" className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-2 m-2 mb-0">
-          <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
-          <TabsTrigger value="copy" className="text-xs">Copy</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 m-2 mb-0 bg-gray-800 border-gray-700">
+          <TabsTrigger value="edit" className="text-xs text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">Edit</TabsTrigger>
+          <TabsTrigger value="copy" className="text-xs text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">Copy</TabsTrigger>
         </TabsList>
 
         <TabsContent value="edit" className="p-3 space-y-3 flex-1 overflow-y-auto">
           {textItems.map((item) => (
-            <div key={item.id} className="space-y-2 p-2 border border-gray-100 rounded">
+            <div key={item.id} className="space-y-2 p-2 border border-gray-700 rounded bg-gray-800">
               <div className="flex items-center space-x-2">
                 <Switch
                   checked={item.isFormatted}
                   onCheckedChange={(checked) => updateItemFormat(item.id, checked)}
                   className="scale-75"
                 />
-                <span className="text-xs text-gray-600 flex-1">
+                <span className="text-xs text-gray-400 flex-1">
                   {item.isFormatted ? 'Formatted' : 'Plain'}
                 </span>
                 <Button
                   onClick={() => deleteItem(item.id)}
                   variant="ghost"
                   size="sm"
-                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                  className="h-6 w-6 p-0 text-gray-500 hover:text-red-400 hover:bg-gray-700"
                 >
                   <Trash2 className="w-3 h-3" />
                 </Button>
@@ -316,7 +316,7 @@ const ClipboardManager = () => {
                 value={item.content}
                 onChange={(e) => updateItemContent(item.id, e.target.value)}
                 placeholder="Enter text..."
-                className="text-sm"
+                className="text-sm bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-gray-500"
               />
             </div>
           ))}
@@ -324,7 +324,7 @@ const ClipboardManager = () => {
             onClick={addNewItem}
             variant="outline"
             size="sm"
-            className="w-full h-8 text-xs"
+            className="w-full h-8 text-xs bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
           >
             <Plus className="w-3 h-3 mr-1" />
             Add Row
@@ -336,34 +336,34 @@ const ClipboardManager = () => {
             <button
               key={item.id}
               onClick={() => copyToClipboard(item.content, item.id)}
-              className="w-full p-2 text-left border border-gray-200 rounded hover:bg-gray-50 transition-colors group"
+              className="w-full p-2 text-left border border-gray-700 rounded hover:bg-gray-800 transition-colors group bg-gray-800"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   {item.isFormatted ? (
                     <div 
-                      className="text-sm truncate"
+                      className="text-sm truncate text-gray-200"
                       dangerouslySetInnerHTML={{ __html: item.content }}
                     />
                   ) : (
-                    <div className="text-sm truncate">{item.content}</div>
+                    <div className="text-sm truncate text-gray-200">{item.content}</div>
                   )}
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-gray-500 mt-1">
                     {item.isFormatted ? 'Formatted' : 'Plain text'}
                   </div>
                 </div>
                 <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   {copiedId === item.id ? (
-                    <Check className="w-4 h-4 text-green-500" />
+                    <Check className="w-4 h-4 text-green-400" />
                   ) : (
-                    <Copy className="w-4 h-4 text-gray-400" />
+                    <Copy className="w-4 h-4 text-gray-500" />
                   )}
                 </div>
               </div>
             </button>
           ))}
           {textItems.filter(item => item.content.trim()).length === 0 && (
-            <div className="text-center text-gray-400 text-sm py-4">
+            <div className="text-center text-gray-500 text-sm py-4">
               No text items to copy
             </div>
           )}
