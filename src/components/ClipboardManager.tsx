@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Copy, Check, Trash2 } from 'lucide-react';
+import { Plus, Copy, Check, Trash2, Save, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -10,6 +10,12 @@ interface TextItem {
   id: string;
   content: string;
   isFormatted: boolean;
+}
+
+interface Configuration {
+  items: TextItem[];
+  timestamp: number;
+  name: string;
 }
 
 const ClipboardManager = () => {
@@ -25,6 +31,7 @@ const ClipboardManager = () => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addNewItem = () => {
     const newItem: TextItem = {
@@ -65,6 +72,58 @@ const ClipboardManager = () => {
     } catch (err) {
       toast.error('Failed to copy to clipboard');
     }
+  };
+
+  const saveConfiguration = () => {
+    const config: Configuration = {
+      items: textItems,
+      timestamp: Date.now(),
+      name: `Config_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}`
+    };
+    
+    const dataStr = JSON.stringify(config, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `${config.name}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    toast.success('Configuration saved!');
+  };
+
+  const loadConfiguration = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const config: Configuration = JSON.parse(content);
+        
+        if (config.items && Array.isArray(config.items)) {
+          setTextItems(config.items);
+          toast.success('Configuration loaded successfully!');
+        } else {
+          toast.error('Invalid configuration file format');
+        }
+      } catch (error) {
+        toast.error('Failed to load configuration file');
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -194,9 +253,37 @@ const ClipboardManager = () => {
       <div className="resize-handle absolute left-0 top-2 bottom-2 w-1 cursor-w-resize" data-resize="left" />
       <div className="resize-handle absolute right-0 top-2 bottom-2 w-1 cursor-e-resize" data-resize="right" />
 
-      <div className="drag-handle cursor-move bg-gray-50 px-3 py-2 border-b border-gray-200 rounded-t-lg">
+      <div className="drag-handle cursor-move bg-gray-50 px-3 py-2 border-b border-gray-200 rounded-t-lg flex items-center justify-between">
         <span className="text-sm font-medium text-gray-700">Tim's Stupendous Copy/Paste-A-Thon</span>
+        <div className="flex space-x-1">
+          <Button
+            onClick={saveConfiguration}
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-gray-500 hover:text-blue-600"
+            title="Save Configuration"
+          >
+            <Save className="w-3 h-3" />
+          </Button>
+          <Button
+            onClick={triggerFileInput}
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-gray-500 hover:text-green-600"
+            title="Load Configuration"
+          >
+            <Upload className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={loadConfiguration}
+        className="hidden"
+      />
 
       <Tabs defaultValue="edit" className="w-full h-full flex flex-col">
         <TabsList className="grid w-full grid-cols-2 m-2 mb-0">
