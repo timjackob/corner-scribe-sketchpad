@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus, Copy, Check } from 'lucide-react';
+import { Plus, Copy, Check, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -20,7 +19,7 @@ const ClipboardManager = () => {
   ]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
-  const [size, setSize] = useState({ width: 320, height: 400 });
+  const [size, setSize] = useState({ width: 320, height: 450 });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -50,6 +49,11 @@ const ClipboardManager = () => {
         item.id === id ? { ...item, isFormatted } : item
       )
     );
+  };
+
+  const deleteItem = (id: string) => {
+    setTextItems(items => items.filter(item => item.id !== id));
+    toast.success('Item deleted');
   };
 
   const copyToClipboard = async (content: string, id: string) => {
@@ -175,8 +179,8 @@ const ClipboardManager = () => {
         top: position.y,
         width: size.width,
         height: size.height,
-        minWidth: '280px',
-        minHeight: '300px'
+        minWidth: '320px',
+        minHeight: '350px'
       }}
       onMouseDown={handleMouseDown}
     >
@@ -219,6 +223,14 @@ const ClipboardManager = () => {
                 <span className="text-xs text-gray-600 flex-1">
                   {item.isFormatted ? 'Formatted' : 'Plain'}
                 </span>
+                <Button
+                  onClick={() => deleteItem(item.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
               </div>
               <Input
                 value={item.content}
