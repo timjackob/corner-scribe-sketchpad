@@ -19,10 +19,7 @@ interface Configuration {
 }
 
 const ClipboardManager = () => {
-  const [textItems, setTextItems] = useState<TextItem[]>([
-    { id: '1', content: 'Hello World!', isFormatted: false },
-    { id: '2', content: '<strong>Bold Text</strong>', isFormatted: true }
-  ]);
+  const [textItems, setTextItems] = useState<TextItem[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [size, setSize] = useState({ width: 320, height: 450 });
@@ -260,7 +257,7 @@ const ClipboardManager = () => {
             onClick={saveConfiguration}
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400 hover:bg-gray-700"
+            className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20"
             title="Save Configuration"
           >
             <Save className="w-3 h-3" />
@@ -269,7 +266,7 @@ const ClipboardManager = () => {
             onClick={triggerFileInput}
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-gray-400 hover:text-green-400 hover:bg-gray-700"
+            className="h-6 w-6 p-0 text-gray-400 hover:text-blue-400 hover:bg-blue-500/20"
             title="Load Configuration"
           >
             <Upload className="w-3 h-3" />
@@ -285,90 +282,102 @@ const ClipboardManager = () => {
         className="hidden"
       />
 
-      <Tabs defaultValue="edit" className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-2 m-2 mb-0 bg-gray-800 border-gray-700">
-          <TabsTrigger value="edit" className="text-xs text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">Edit</TabsTrigger>
-          <TabsTrigger value="copy" className="text-xs text-gray-300 data-[state=active]:bg-gray-700 data-[state=active]:text-white">Copy</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="edit" className="p-3 space-y-3 flex-1 overflow-y-auto">
-          {textItems.map((item) => (
-            <div key={item.id} className="space-y-2 p-2 border border-gray-700 rounded bg-gray-800">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={item.isFormatted}
-                  onCheckedChange={(checked) => updateItemFormat(item.id, checked)}
-                  className="scale-75"
-                />
-                <span className="text-xs text-gray-400 flex-1">
-                  {item.isFormatted ? 'Formatted' : 'Plain'}
-                </span>
-                <Button
-                  onClick={() => deleteItem(item.id)}
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 text-gray-500 hover:text-red-400 hover:bg-gray-700"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
-              <Input
-                value={item.content}
-                onChange={(e) => updateItemContent(item.id, e.target.value)}
-                placeholder="Enter text..."
-                className="text-sm bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-gray-500"
-              />
-            </div>
-          ))}
-          <Button
-            onClick={addNewItem}
-            variant="outline"
-            size="sm"
-            className="w-full h-8 text-xs bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-          >
-            <Plus className="w-3 h-3 mr-1" />
-            Add Row
-          </Button>
-        </TabsContent>
-
-        <TabsContent value="copy" className="p-3 space-y-2 flex-1 overflow-y-auto">
-          {textItems.filter(item => item.content.trim()).map((item) => (
-            <button
-              key={item.id}
-              onClick={() => copyToClipboard(item.content, item.id)}
-              className="w-full p-2 text-left border border-gray-700 rounded hover:bg-gray-800 transition-colors group bg-gray-800"
+      <div className="p-3 flex flex-col h-full">
+        <Tabs defaultValue="edit" className="w-full flex-1 flex flex-col">
+          <TabsList className="grid w-full grid-cols-2 mb-3 bg-gray-800 border border-gray-700">
+            <TabsTrigger 
+              value="edit" 
+              className="text-xs text-gray-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white hover:bg-blue-500/20"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  {item.isFormatted ? (
-                    <div 
-                      className="text-sm truncate text-gray-200"
-                      dangerouslySetInnerHTML={{ __html: item.content }}
-                    />
-                  ) : (
-                    <div className="text-sm truncate text-gray-200">{item.content}</div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-1">
-                    {item.isFormatted ? 'Formatted' : 'Plain text'}
+              Edit
+            </TabsTrigger>
+            <TabsTrigger 
+              value="copy" 
+              className="text-xs text-gray-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white hover:bg-blue-500/20"
+            >
+              Copy
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="edit" className="space-y-3 flex-1 overflow-y-auto mt-0">
+            {textItems.map((item) => (
+              <div key={item.id} className="space-y-2 p-2 border border-gray-700 rounded bg-gray-800">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={item.isFormatted}
+                    onCheckedChange={(checked) => updateItemFormat(item.id, checked)}
+                    className="scale-75 data-[state=checked]:bg-blue-600"
+                  />
+                  <span className="text-xs text-gray-400 flex-1">
+                    {item.isFormatted ? 'Formatted' : 'Plain'}
+                  </span>
+                  <Button
+                    onClick={() => deleteItem(item.id)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-gray-500 hover:text-red-400 hover:bg-red-500/20"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <Input
+                  value={item.content}
+                  onChange={(e) => updateItemContent(item.id, e.target.value)}
+                  placeholder="Enter text..."
+                  className="text-sm bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
+                />
+              </div>
+            ))}
+            <Button
+              onClick={addNewItem}
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs bg-gray-800 border-gray-600 text-gray-300 hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-500"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Add Row
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="copy" className="space-y-2 flex-1 overflow-y-auto mt-0">
+            {textItems.filter(item => item.content.trim()).map((item) => (
+              <button
+                key={item.id}
+                onClick={() => copyToClipboard(item.content, item.id)}
+                className="w-full p-2 text-left border border-gray-700 rounded hover:bg-blue-500/20 hover:border-blue-500 transition-colors group bg-gray-800"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    {item.isFormatted ? (
+                      <div 
+                        className="text-sm truncate text-gray-200"
+                        dangerouslySetInnerHTML={{ __html: item.content }}
+                      />
+                    ) : (
+                      <div className="text-sm truncate text-gray-200">{item.content}</div>
+                    )}
+                    <div className="text-xs text-gray-500 mt-1">
+                      {item.isFormatted ? 'Formatted' : 'Plain text'}
+                    </div>
+                  </div>
+                  <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {copiedId === item.id ? (
+                      <Check className="w-4 h-4 text-blue-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-gray-500" />
+                    )}
                   </div>
                 </div>
-                <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {copiedId === item.id ? (
-                    <Check className="w-4 h-4 text-green-400" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-gray-500" />
-                  )}
-                </div>
+              </button>
+            ))}
+            {textItems.filter(item => item.content.trim()).length === 0 && (
+              <div className="text-center text-gray-500 text-sm py-4">
+                No text items to copy
               </div>
-            </button>
-          ))}
-          {textItems.filter(item => item.content.trim()).length === 0 && (
-            <div className="text-center text-gray-500 text-sm py-4">
-              No text items to copy
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
